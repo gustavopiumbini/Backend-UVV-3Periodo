@@ -3,49 +3,31 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// LINHA NOVA 1: Avisando a API que vamos usar a arquitetura de Controllers
+// 1. AVISANDO A API: Vamos usar a arquitetura de Controllers
 builder.Services.AddControllers();
 
-// (Essa parte do banco de dados você já tinha feito)
+// 2. CONFIGURAÇÃO DO CORS: O "Passe VIP" para o Front-end
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("PermitirTudo", policy =>
+    {
+        policy.AllowAnyOrigin()   // Permite que qualquer site acesse a API
+              .AllowAnyMethod()   // Permite GET, POST, etc
+              .AllowAnyHeader();  // Permite qualquer cabeçalho
+    });
+});
+
+// 3. BANCO DE DADOS: Conectando o Entity Framework ao nosso SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=dropmon.db"));
 
 var app = builder.Build();
 
-// LINHA NOVA 2: Mapeando as URLs para os nossos Controllers (como o /api/produtos)
+// 4. ATIVANDO O CORS: (MUITO IMPORTANTE: Tem que vir ANTES do MapControllers)
+app.UseCors("PermitirTudo");
+
+// 5. ROTAS: Mapeando os caminhos para o nosso garçom (ProdutosController)
 app.MapControllers();
 
+// 6. LIGANDO O MOTOR: Só pode existir UM app.Run() e ele fica no final!
 app.Run();
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
-app.UseHttpsRedirection();
-
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
