@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#ffffff"><meta name="description" content="DropMon: catálogo e gestão do acervo da sua marca.">
+<title>tsey / DropMon</title>
+<link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
+</head>
+<body>
+<a class="skip" href="#catalogo">Ir para as peças</a>
+<header class="header">
+    <a class="brand" href="/" aria-label="tsey / DROPMON, início">tsey<span> / DROPMON</span></a>
+    <nav aria-label="Visualização"><button id="modo-catalogo" aria-pressed="true">CATÁLOGO</button><button id="modo-estoque" aria-pressed="false">ESTOQUE</button></nav>
+    <button id="nova-peca" class="new-button"><span aria-hidden="true">+</span> NOVA PEÇA</button>
+</header>
+<main id="catalogo">
+    <section class="toolbar" aria-label="Filtros do catálogo">
+        <div class="filters">
+            <label><span class="sr-only">Categoria</span><select id="categoria-filtro"><option value="">Todas as categorias</option></select></label>
+            <label><span class="sr-only">Drop</span><select id="drop-filtro"><option value="">Todos os drops</option></select></label>
+            <label><span class="sr-only">Ano</span><select id="ano-filtro"><option value="">Todos os anos</option></select></label>
+            <label><span class="sr-only">Disponibilidade</span><select id="estoque-filtro"><option value="">Todo o estoque</option><option value="disponivel">Em estoque</option><option value="baixo">Estoque baixo (até 5)</option><option value="esgotado">Sem estoque</option></select></label>
+        </div>
+        <div class="search"><label for="busca" class="sr-only">Buscar peça</label><input id="busca" type="search" placeholder="Buscar peça"><button id="limpar" hidden>Limpar filtros</button></div>
+    </section>
+    <div class="catalog-meta"><p id="contagem" aria-live="polite">Carregando acervo</p><button id="atualizar">ATUALIZAR</button></div>
+    <p id="mensagem" class="notice" role="status"></p>
+    <section id="grade" class="grid" aria-label="Peças do catálogo" aria-busy="true"></section>
+    <div id="tabela-container" class="table-wrap" hidden><table><caption class="sr-only">Estoque das peças filtradas</caption><thead><tr><th>Peça</th><th>Categoria</th><th>Drop / ano</th><th>Preço</th><th>Estoque</th><th><span class="sr-only">Ações</span></th></tr></thead><tbody id="tabela"></tbody></table></div>
+    <section id="vazio" class="empty" hidden><h1>Nenhuma peça por aqui.</h1><p id="vazio-texto">Adicione a primeira peça em Nova peça.</p></section>
+</main>
+<footer><span>DROPMON / ACERVO DA MARCA</span><span id="resumo"></span></footer>
+
+<dialog id="detalhes" class="detail-dialog" aria-labelledby="detalhe-nome">
+    <button class="close" data-close="detalhes" aria-label="Fechar detalhes">×</button>
+    <div class="detail-layout">
+        <div class="gallery"><div id="foto-principal" class="main-photo"></div><div id="miniaturas" class="thumbnails" aria-label="Fotos do produto"></div></div>
+        <div class="detail-info">
+            <p id="detalhe-categoria" class="muted"></p><h1 id="detalhe-nome"></h1>
+            <p id="detalhe-preco" class="price"></p>
+            <div class="stock-block"><span>EM ESTOQUE</span><strong id="detalhe-estoque"></strong></div>
+            <p id="detalhe-descricao" class="description"></p>
+            <dl id="detalhe-atributos"></dl>
+            <p id="detalhe-exclusivo" class="exclusive" hidden>DROP EXCLUSIVO</p>
+            <div class="detail-actions"><button id="editar" class="solid">EDITAR PEÇA</button><button id="excluir" class="text-button">Excluir peça</button></div>
+        </div>
+    </div>
+</dialog>
+
+<dialog id="editor" class="editor-dialog" aria-labelledby="form-titulo">
+    <div class="dialog-head"><h1 id="form-titulo">Nova peça</h1><button class="close" data-close="editor" aria-label="Fechar cadastro">×</button></div>
+    <form id="produto-form">
+        <p id="form-erro" class="form-error" role="alert"></p>
+        <fieldset id="campos">
+            <legend class="sr-only">Dados da peça</legend>
+            <section class="photo-field"><label for="fotos">Fotos da peça</label><p class="help">Até 4 fotos. JPG, PNG ou WebP, até 5 MB cada.</p>
+                <div id="fotos-preview" class="photo-previews"></div>
+                <label class="upload" for="fotos"><span aria-hidden="true">+</span><span>Adicionar fotos</span><input id="fotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>
+            </section>
+            <label for="nome">Nome da peça <span>*</span></label><input id="nome" name="nome" required maxlength="120" placeholder="Ex.: Camiseta oversized">
+            <label for="categoria">Categoria <span>*</span></label><input id="categoria" name="categoria" list="categorias" required maxlength="60" placeholder="Ex.: Camisetas"><datalist id="categorias"></datalist>
+            <div class="form-row"><div><label for="preco">Preço (R$) <span>*</span></label><input id="preco" name="preco" inputmode="decimal" required placeholder="149,90"></div><div><label for="estoque">Estoque <span>*</span></label><input id="estoque" name="estoque" type="number" min="0" max="2147483647" step="1" required placeholder="0"></div></div>
+            <div class="form-row"><div><label for="dropNome">Drop <small>opcional</small></label><input id="dropNome" name="dropNome" list="drops" maxlength="80" placeholder="Ex.: Essentials"><datalist id="drops"></datalist></div><div><label for="ano">Ano <small>opcional</small></label><input id="ano" name="ano" type="number" min="1900" max="2100" step="1" placeholder="2026"></div></div>
+            <div class="form-row"><div><label for="cor">Cor</label><input id="cor" name="cor" maxlength="60" placeholder="Ex.: Preto"></div><div><label for="material">Material</label><input id="material" name="material" maxlength="120" placeholder="Ex.: Algodão"></div></div>
+            <label for="descricao">Descrição</label><textarea id="descricao" name="descricao" maxlength="1500" rows="3" placeholder="Modelagem, acabamento e outras informações da peça."></textarea>
+            <label class="check"><input id="exclusivo" name="exclusivo" type="checkbox"> Drop exclusivo</label>
+            <button id="salvar" class="solid" type="submit">SALVAR PEÇA</button>
+        </fieldset>
+    </form>
+</dialog>
+
+<dialog id="confirmacao" class="confirm-dialog" aria-labelledby="confirmar-titulo">
+    <h1 id="confirmar-titulo">Excluir peça?</h1><p id="confirmar-texto"></p><p>As fotos e os dados serão removidos. Esta ação não pode ser desfeita.</p>
+    <p id="excluir-erro" class="form-error" role="alert"></p>
+    <div class="confirm-actions"><button id="cancelar-exclusao" class="outline">CANCELAR</button><button id="confirmar-exclusao" class="solid">EXCLUIR</button></div>
+</dialog>
+</body>
+</html>

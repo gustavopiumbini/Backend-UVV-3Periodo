@@ -1,0 +1,13 @@
+**/bin/
+**/obj/
+.vs/
+.idea/
+TestResults/
+artifacts/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+.env
+node_modules/
+DropMonAPI/App_Data/

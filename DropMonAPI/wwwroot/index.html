@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>tsey. | Admin DropMon</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/styles.css">
+    <script type="module" src="/app.js"></script>
+</head>
+<body>
+    <header><h1>tsey <span>DropMon</span></h1></header>
+    <main>
+        <button id="carregar" class="btn-carregar" type="button">Atualizar produtos</button>
+        <p id="mensagem" role="status" aria-live="polite"></p>
+        <form id="produto-form" class="card formulario">
+            <h2 id="form-titulo">Cadastrar novo drop</h2>
+            <fieldset id="campos">
+                <legend class="sr-only">Dados do produto</legend>
+                <label for="nome">Nome da peça</label>
+                <input id="nome" name="nome" required maxlength="120" placeholder="Ex.: Boné tsey">
+                <label for="categoria">Categoria</label>
+                <input id="categoria" name="categoria" required maxlength="60" placeholder="Ex.: Acessórios">
+                <label for="preco">Preço (R$)</label>
+                <input id="preco" name="preco" required inputmode="decimal" aria-describedby="preco-ajuda" placeholder="Ex.: 149,90">
+                <small id="preco-ajuda">De 0,01 a 999.999,99. Use até duas casas decimais.</small>
+                <label for="estoque">Quantidade em estoque</label>
+                <input id="estoque" name="estoque" type="number" min="0" max="2147483647" step="1" required>
+                <label class="checkbox"><input id="exclusivo" name="exclusivo" type="checkbox"> É drop exclusivo?</label>
+                <button id="salvar" type="submit">Cadastrar produto</button>
+                <button id="cancelar" type="button" hidden>Cancelar edição</button>
+            </fieldset>
+        </form>
+        <section aria-label="Produtos cadastrados">
+            <p id="lista-status" role="status"></p>
+            <div id="vitrine"></div>
+        </section>
+    </main>
+</body>
+</html>

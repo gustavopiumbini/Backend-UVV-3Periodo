@@ -1,4 +1,4 @@
-@baseUrl = http://localhost:5126
+@baseUrl = http://localhost:5136
 @produtoId = 1
 
 ### Listar
@@ -49,3 +49,15 @@ DELETE {{baseUrl}}/api/produtos/{{produtoId}}
 
 ### Documento OpenAPI (Development)
 GET {{baseUrl}}/openapi/v1.json
+
+
+### Enviar uma foto local (ajuste o caminho)
+POST {{baseUrl}}/api/produtos/{{produtoId}}/fotos
+Content-Type: multipart/form-data; boundary=dropmon
+
+--dropmon
+Content-Disposition: form-data; name="arquivo"; filename="foto.png"
+Content-Type: image/png
+
+< ./wwwroot/demo/camiseta.png
+--dropmon--

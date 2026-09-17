@@ -1,0 +1,23 @@
+name: Verificar projeto
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: dotnet restore BACKEND-UVV.sln -p:NuGetAuditMode=all -warnaserror
+      - run: dotnet build BACKEND-UVV.sln --no-restore --configuration Release
+      - run: dotnet test BACKEND-UVV.sln --no-build --configuration Release --logger trx
+      - run: node --test tests/*.test.mjs
+      - run: dotnet publish DropMonAPI --no-restore --configuration Release --output artifacts/publish
+

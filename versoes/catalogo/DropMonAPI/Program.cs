@@ -5,6 +5,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
+builder.Services.AddSingleton<DropMonAPI.Services.FotoStorage>();
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
@@ -24,6 +25,9 @@ if (app.Environment.IsDevelopment())
     // Facilita o primeiro clone. Em produção, migrations são aplicadas no deploy.
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
+    if (builder.Configuration.GetValue<bool>("Demo:Seed"))
+        await DropMonAPI.Data.DemoData.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(),
+            scope.ServiceProvider.GetRequiredService<DropMonAPI.Services.FotoStorage>(), app.Environment.WebRootPath);
     app.MapOpenApi();
 }
 app.UseDefaultFiles();
