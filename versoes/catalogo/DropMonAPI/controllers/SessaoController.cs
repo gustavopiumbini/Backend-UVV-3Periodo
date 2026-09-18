@@ -8,8 +8,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace DropMonAPI.Controllers;
 
-public sealed record LoginRequest([property: Required, EmailAddress] string Email,
-    [property: Required, MinLength(8), MaxLength(200)] string Senha);
+public sealed record LoginRequest([param: Required, EmailAddress] string Email,
+    [param: Required, MinLength(8), MaxLength(200)] string Senha);
 
 [ApiController]
 [Route("api/sessao")]

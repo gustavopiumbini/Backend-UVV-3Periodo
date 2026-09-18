@@ -288,6 +288,18 @@ public sealed class ProdutoApiTests : IDisposable
     }
 
     [Fact]
+    public async Task Login_ComPayloadValido_NaoFalhaNaValidacaoDoRecord()
+    {
+        using var client = Client;
+        using var request = new HttpRequestMessage(HttpMethod.Post, "/api/sessao/entrar") {
+            Content = JsonContent.Create(new { email = "admin@dropmon.test", senha = "12345678" })
+        };
+        request.Headers.Add("X-DropMon-Request", "1");
+
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(request)).StatusCode);
+    }
+
+    [Fact]
     public void Migrations_GeramPostgresComIdentidadePrecisaoERls()
     {
         var options = new DbContextOptionsBuilder<AppDbContext>()
