@@ -5,7 +5,7 @@ namespace DropMonAPI.Data;
 public static class DemoData
 {
     // Executado somente por opção explícita em Development e em um catálogo vazio.
-    public static async Task SeedAsync(AppDbContext db, DropMonAPI.Services.FotoStorage storage, string webRoot)
+    public static async Task SeedAsync(AppDbContext db, DropMonAPI.Services.FotoStorage storage, string contentRoot)
     {
         if (await db.Produtos.AnyAsync()) return;
         var dados = new[] {
@@ -21,7 +21,7 @@ public static class DemoData
         {
         foreach (var (nome, categoria, preco, estoque, drop, ano, foto, cor, material, descricao) in dados)
         {
-            await using var source = File.OpenRead(Path.Combine(webRoot, "demo", foto + ".png"));
+            await using var source = File.OpenRead(Path.Combine(contentRoot, "DemoAssets", foto + ".png"));
             var upload = new FormFile(source, 0, source.Length, "arquivo", foto + ".png");
             var url = await storage.SalvarAsync(upload, CancellationToken.None);
             arquivos.Add(url);
@@ -35,6 +35,6 @@ public static class DemoData
         }
         await db.SaveChangesAsync();
         }
-        catch { foreach (var url in arquivos) storage.Excluir(url); throw; }
+        catch { foreach (var url in arquivos) await storage.ExcluirAsync(url); throw; }
     }
 }

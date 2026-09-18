@@ -2,12 +2,14 @@ using DropMonAPI.Contracts;
 using DropMonAPI.Data;
 using DropMonAPI.Models;
 using DropMonAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace DropMonAPI.Controllers;
 
 [ApiController]
+[Authorize(Policy = "Admin")]
 public class FotosController(AppDbContext context, FotoStorage storage) : ControllerBase
 {
     [HttpPost("api/produtos/{id:int}/fotos")]
@@ -15,8 +17,8 @@ public class FotosController(AppDbContext context, FotoStorage storage) : Contro
     [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
     public async Task<ActionResult<FotoResponse>> Enviar(int id, IFormFile arquivo, CancellationToken ct)
     {
-        // A transação serializa a contagem e a inclusão no SQLite, inclusive em envios simultâneos.
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        // Serializa a contagem e a inclusão para respeitar o limite em SQLite e PostgreSQL.
+        await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
         var produto = await context.Produtos.Include(p => p.Fotos).SingleOrDefaultAsync(p => p.Id == id, ct);
         if (produto is null) return NotFound();
         if (produto.Fotos.Count >= 4) return Problem(statusCode: 400, detail: "Cada produto pode ter até 4 fotos.");
@@ -30,7 +32,7 @@ public class FotosController(AppDbContext context, FotoStorage storage) : Contro
             await context.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
-        catch { storage.Excluir(url); throw; }
+        catch { await storage.ExcluirAsync(url, ct); throw; }
         return Created(url, new FotoResponse(foto.Id, foto.Url));
     }
 
@@ -41,17 +43,17 @@ public class FotosController(AppDbContext context, FotoStorage storage) : Contro
         if (foto is null) return NotFound();
         context.Remove(foto);
         await context.SaveChangesAsync(ct);
-        storage.Excluir(foto.Url);
+        await storage.ExcluirAsync(foto.Url, ct);
         return NoContent();
     }
 
     [HttpGet("media/{arquivo}")]
-    public IActionResult Ler(string arquivo)
+    public async Task<IActionResult> Ler(string arquivo, CancellationToken ct)
     {
-        var caminho = storage.Resolver(arquivo);
-        if (caminho is null || !System.IO.File.Exists(caminho)) return NotFound();
-        Response.Headers.CacheControl = "public,max-age=86400";
+        var conteudo = await storage.LerAsync(arquivo, ct);
+        if (conteudo is null) return NotFound();
+        Response.Headers.CacheControl = "private,max-age=86400";
         Response.Headers.XContentTypeOptions = "nosniff";
-        return PhysicalFile(caminho, "image/webp");
+        return File(conteudo, "image/webp");
     }
 }

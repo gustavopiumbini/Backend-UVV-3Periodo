@@ -40,6 +40,6 @@ Antes de publicar, ajuste o texto à sua experiência e confirme que o workflow 
 
 - Interface: melhorar hierarquia, navegação e estados sem mudar o contrato da API.
 - Banco: comparar SQLite com PostgreSQL ou SQL Server, documentando migrations e diferenças.
-- Uso real: adicionar autenticação e permissões antes da exposição pública.
+- Uso real: ampliar o acesso atual de administrador único para papéis, recuperação de senha e auditoria de alterações.
 
 Este arquivo é apenas um roteiro. Nenhuma postagem é feita automaticamente.

@@ -16,9 +16,10 @@ COPY --from=build /app/publish .
 
 # O Render encaminha o tráfego para a porta 10000 por padrão.
 ENV ASPNETCORE_HTTP_PORTS=10000
-# Configuração temporária da demonstração: cria o SQLite e os itens fictícios.
+# Aplica migrations e insere a demonstração somente quando o banco configurado está vazio.
 ENV Database__MigrateOnStartup=true
 ENV Demo__Seed=true
+ENV Admin__RequireAuthentication=true
 EXPOSE 10000
 
 ENTRYPOINT ["dotnet", "DropMonAPI.dll"]

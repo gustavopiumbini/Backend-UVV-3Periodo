@@ -2,7 +2,7 @@
 
 Geradas com a ferramenta integrada ImageGen, sem usar as fotos da Yeezy. São imagens fictícias para o portfólio e podem ser substituídas pelas fotos reais no cadastro.
 
-Arquivos finais: `DropMonAPI/wwwroot/demo/`. Originais PNG são preservados; ao carregar a demonstração, a própria aplicação cria versões WebP para exibição.
+Arquivos finais: `DropMonAPI/DemoAssets/`. Os PNGs ficam fora da pasta pública; ao carregar a demonstração, a própria aplicação cria versões WebP entregues somente pela rota autenticada.
 
 Prompts utilizados:
 

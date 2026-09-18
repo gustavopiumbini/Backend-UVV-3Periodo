@@ -75,7 +75,7 @@ O workflow do GitHub Actions executa build, testes e publicação dos arquivos, 
 
 ## 8. Limites deliberados
 
-- Sem login e autorização nesta etapa: é uma demonstração local, ainda não um painel pronto para exposição pública.
+- O catálogo e a gestão exigem a sessão do administrador configurado no Supabase Auth; as imagens usam a mesma proteção.
 - Sem paginação e filtros: adequados como próxima evolução conforme o catálogo crescer.
 - Sem controle de versão de registros: duas edições simultâneas podem sobrescrever uma à outra.
 - Sem nova estrutura do banco: a migration original foi preservada, e a validação adicionada protege a entrada HTTP, sem corrigir automaticamente dados antigos.

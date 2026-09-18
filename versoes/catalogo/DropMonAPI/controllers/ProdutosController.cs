@@ -1,6 +1,7 @@
 using DropMonAPI.Contracts;
 using DropMonAPI.Data;
 using DropMonAPI.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace DropMonAPI.Controllers;
 
 [ApiController]
 [Route("api/produtos")]
+[Authorize(Policy = "Admin")]
 public class ProdutosController(AppDbContext context, DropMonAPI.Services.FotoStorage storage) : ControllerBase
 {
     [HttpGet]
@@ -62,7 +64,7 @@ public class ProdutosController(AppDbContext context, DropMonAPI.Services.FotoSt
         var caminhos = produto.Fotos.Select(f => f.Url).ToArray();
         context.Produtos.Remove(produto);
         await context.SaveChangesAsync(cancellationToken);
-        foreach (var caminho in caminhos) storage.Excluir(caminho);
+        foreach (var caminho in caminhos) await storage.ExcluirAsync(caminho, cancellationToken);
         return NoContent();
     }
 

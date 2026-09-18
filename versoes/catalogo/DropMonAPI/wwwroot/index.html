@@ -7,11 +7,28 @@
 <link rel="stylesheet" href="/styles.css"><script type="module" src="/app.js"></script>
 </head>
 <body>
+<main id="login-shell" class="login-shell">
+    <section class="login-panel" aria-labelledby="login-titulo">
+        <p class="login-brand">tsey<span> / DROPMON</span></p>
+        <p class="login-kicker">GESTÃO DE ACERVO</p>
+        <h1 id="login-titulo">Acesse seu catálogo.</h1>
+        <p class="login-copy">Entre com a conta administrativa para visualizar as peças e gerenciar o estoque.</p>
+        <form id="login-form">
+            <label for="login-email">E-mail</label>
+            <input id="login-email" name="email" type="email" autocomplete="username" required maxlength="254">
+            <label for="login-senha">Senha</label>
+            <input id="login-senha" name="senha" type="password" autocomplete="current-password" required minlength="8" maxlength="200">
+            <p id="login-erro" class="form-error" role="alert"></p>
+            <button id="entrar" class="solid" type="submit">ENTRAR</button>
+        </form>
+      </section>
+</main>
+<div id="app-shell" hidden>
 <a class="skip" href="#catalogo">Ir para as peças</a>
 <header class="header">
     <a class="brand" href="/" aria-label="tsey / DROPMON, início">tsey<span> / DROPMON</span></a>
     <nav aria-label="Visualização"><button id="modo-catalogo" aria-pressed="true">CATÁLOGO</button><button id="modo-estoque" aria-pressed="false">ESTOQUE</button></nav>
-    <button id="nova-peca" class="new-button"><span aria-hidden="true">+</span> NOVA PEÇA</button>
+    <div class="header-actions"><button id="nova-peca" class="new-button"><span aria-hidden="true">+</span> NOVA PEÇA</button><button id="sair" class="logout-button">SAIR</button></div>
 </header>
 <main id="catalogo">
     <section class="toolbar" aria-label="Filtros do catálogo">
@@ -74,5 +91,6 @@
     <p id="excluir-erro" class="form-error" role="alert"></p>
     <div class="confirm-actions"><button id="cancelar-exclusao" class="outline">CANCELAR</button><button id="confirmar-exclusao" class="solid">EXCLUIR</button></div>
 </dialog>
+</div>
 </body>
 </html>

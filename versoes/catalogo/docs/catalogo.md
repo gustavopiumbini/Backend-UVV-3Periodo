@@ -2,7 +2,7 @@
 
 ## Cópia independente
 
-O código foi copiado para versoes/catalogo sem reutilizar o banco nem a pasta de fotos da versão consolidada. O endereço é localhost:5136; a versão anterior usa localhost:5126. Nenhum commit ou envio ao GitHub foi feito.
+O código foi copiado para `versoes/catalogo` sem reutilizar o banco nem a pasta de fotos da versão consolidada. O endereço local é `localhost:5136`; a versão anterior usa `localhost:5126`.
 
 ## Leitura da referência
 
@@ -16,6 +16,7 @@ Direção: catálogo de moda para o dono de marca; composição regular, movimen
 
 ## Interface
 
+- Acesso privado: o catálogo só é montado após a API confirmar a sessão administrativa.
 - Grade responsiva: fotos em fundo branco, nome e quantidade na mesma legenda.
 - Detalhes: foto ampliada, miniaturas, preço, estoque, descrição e classificação.
 - Painel lateral: cadastro e edição sem perder a posição do catálogo.
@@ -35,9 +36,9 @@ A nova tabela ProdutoFoto relaciona várias fotos a uma peça. A primeira foto c
 
 A API usa ImageSharp para verificar o conteúdo real, em vez de confiar na extensão ou no MIME enviado pelo navegador. A imagem é regravada em WebP com nome aleatório e sem metadados, fora da pasta pública de código.
 
-O limite de quatro fotos é conferido em transação no SQLite. Ao excluir um produto ou uma foto, a referência é removida do banco e o arquivo correspondente é limpo. Falha de limpeza física é registrada nos logs.
+O limite de quatro fotos é conferido em transação no SQLite e no PostgreSQL. Ao excluir um produto ou uma foto, a referência é removida do banco e o arquivo correspondente é limpo. Falha de limpeza física é registrada nos logs.
 
-Banco e diretório de uploads devem ser preservados juntos. Eles foram excluídos do versionamento e da publicação para não misturar código, mídia local e dados reais.
+No desenvolvimento, banco e diretório de uploads devem ser preservados juntos. Em produção, os registros ficam no PostgreSQL e as imagens em um bucket privado do Supabase. A API entrega cada imagem somente após validar a sessão.
 
 ## Exemplos visuais
 
@@ -47,13 +48,13 @@ A carga de exemplos é opcional. As imagens da demonstração passam pelo mesmo 
 
 ## Verificações
 
-- Testes de integração: regras anteriores e novos campos, fotos reais e inválidas, limite por produto, exclusão e arquivos.
+- Testes de integração: regras anteriores e novos campos, fotos reais e inválidas, limite por produto, exclusão, arquivos, autenticação e migrations PostgreSQL.
 - Testes JavaScript: moeda, estoque, classificação opcional e combinação de filtros.
 - Navegador: cadastro com duas imagens, galeria, edição, remoção de foto, filtros e tabela.
 - Celular: grade com duas colunas e verificação de ausência de rolagem horizontal.
 - Dependências: auditoria NuGet incluindo dependências transitivas.
 
-O workflow está preparado nesta cópia, mas só será executado no GitHub quando esta versão for escolhida e enviada ao repositório.
+O workflow valida automaticamente esta versão quando há push ou pull request para a `main`.
 
 ## Próximos estudos
 
@@ -68,7 +69,7 @@ A auditoria de desempenho motivou a geração de miniaturas de 480 px e a compre
 
 ## Resultado da verificação final
 
-- 29 testes de integração aprovados em Release e 6 testes JavaScript aprovados.
+- 31 testes de integração aprovados em Release e 6 testes JavaScript aprovados.
 - Relatório Lighthouse local, perfil móvel: desempenho 100/100, acessibilidade 100/100 e LCP de 1,6 s.
 - A transferência total medida caiu de 8.823 KiB para aproximadamente 92 KiB após miniaturas e compressão. São medições de uma execução local, não uma garantia para hospedagem futura.
 - Relatório completo: artifacts/lighthouse-final.json. O encerramento do Chrome pelo CLI apresentou um erro de limpeza de pasta temporária no Windows após gerar o relatório; os dados do relatório não apresentam erro de execução.

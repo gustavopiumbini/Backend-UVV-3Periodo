@@ -13,41 +13,41 @@ namespace DropMonAPI.Migrations
             migrationBuilder.AddColumn<int>(
                 name: "Ano",
                 table: "Produtos",
-                type: "INTEGER",
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Cor",
                 table: "Produtos",
-                type: "TEXT",
+                maxLength: 60,
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Descricao",
                 table: "Produtos",
-                type: "TEXT",
+                maxLength: 1500,
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "DropNome",
                 table: "Produtos",
-                type: "TEXT",
+                maxLength: 80,
                 nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Material",
                 table: "Produtos",
-                type: "TEXT",
+                maxLength: 120,
                 nullable: true);
 
             migrationBuilder.CreateTable(
                 name: "ProdutoFoto",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    ProdutoId = table.Column<int>(type: "INTEGER", nullable: false),
-                    Url = table.Column<string>(type: "TEXT", nullable: false)
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true)
+                        .Annotation("Npgsql:ValueGenerationStrategy", Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ProdutoId = table.Column<int>(nullable: false),
+                    Url = table.Column<string>(maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {

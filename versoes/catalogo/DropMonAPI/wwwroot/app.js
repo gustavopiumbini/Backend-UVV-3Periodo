@@ -2,8 +2,9 @@ import {formatarPreco, lerProduto} from './produto.mjs';
 import {filtrarProdutos, lerAno} from './catalogo.mjs';
 const $ = id => document.getElementById(id);
 const form = $('produto-form');
+const loginForm = $('login-form');
 const state = { produtos: [], modo: 'catalogo', ativo: null, editando: null, ocupado: false,
-    fotos: [], novas: [], remover: [], carregado: false };
+    fotos: [], novas: [], remover: [], carregado: false, authenticationRequired: true };
 function el(tag, texto, classe) {
     const node = document.createElement(tag);
     if (texto !== undefined) node.textContent = texto;
@@ -23,10 +24,17 @@ function imagem(url, nome, lazy = true) {
 async function api(path = '', options = {}) {
     let response;
     try {
+        const headers = {'X-DropMon-Request':'1', Accept:'application/json'};
+        if (!(options.body instanceof FormData)) headers['Content-Type']='application/json';
         response = await fetch('/api/produtos' + path, { ...options,
-            headers: options.body instanceof FormData ? {Accept:'application/json'} : {Accept:'application/json', 'Content-Type':'application/json'},
+            headers,
+            credentials:'same-origin',
             signal: AbortSignal.timeout(30000) });
     } catch { throw new Error('Não foi possível confirmar a operação. Confira a conexão e atualize o catálogo antes de repetir.'); }
+    if (response.status === 401) {
+        mostrarLogin('Sua sessão expirou. Entre novamente.');
+        throw new Error('Sua sessão expirou.');
+    }
     if (!response.ok) {
         const body = await response.json().catch(() => null);
         throw new Error(body?.errors ? Object.values(body.errors).flat().join(' ') :
@@ -34,6 +42,35 @@ async function api(path = '', options = {}) {
             response.status === 413 ? 'O arquivo é muito grande. Use fotos de até 5 MB.' : 'Não foi possível concluir a operação.'));
     }
     return response.status === 204 ? null : response.json();
+}
+function fecharDialogs() {
+    for (const id of ['detalhes','editor','confirmacao']) if ($(id).open) $(id).close();
+}
+function mostrarLogin(mensagem = '') {
+    fecharDialogs(); liberarPreviews();
+    $('app-shell').hidden = true; $('login-shell').hidden = false;
+    $('login-erro').textContent = mensagem; loginForm.reset();
+    queueMicrotask(() => $('login-email').focus());
+}
+function mostrarSistema() {
+    $('login-shell').hidden = true; $('app-shell').hidden = false;
+    $('sair').hidden = !state.authenticationRequired;
+}
+async function iniciarSessao() {
+    try {
+        const response = await fetch('/api/sessao/status', {credentials:'same-origin', signal:AbortSignal.timeout(15000)});
+        if (!response.ok) throw new Error();
+        const status = await response.json();
+        state.authenticationRequired = status.authenticationRequired;
+        if (!status.configured) {
+            mostrarLogin('A autenticação ainda precisa ser configurada no servidor.');
+            $('entrar').disabled = true;
+            return;
+        }
+        $('entrar').disabled = false;
+        if (!status.authenticated) { mostrarLogin(); return; }
+        mostrarSistema(); await carregar();
+    } catch { mostrarLogin('Não foi possível consultar a sessão. Tente novamente.'); }
 }
 function busy(value) {
     state.ocupado = value;
@@ -227,6 +264,23 @@ $('limpar').addEventListener('click',()=>{
     renderizar();
 });
 $('atualizar').addEventListener('click',carregar);
+loginForm.addEventListener('submit', async event => {
+    event.preventDefault(); $('login-erro').textContent=''; $('entrar').disabled=true;
+    try {
+        const response=await fetch('/api/sessao/entrar',{method:'POST',credentials:'same-origin',
+            headers:{'Content-Type':'application/json','Accept':'application/json','X-DropMon-Request':'1'},
+            body:JSON.stringify({email:loginForm.elements.email.value.trim(),senha:loginForm.elements.senha.value}),
+            signal:AbortSignal.timeout(30000)});
+        if(!response.ok){const body=await response.json().catch(()=>null);throw new Error(body?.detail||'Não foi possível entrar.');}
+        mostrarSistema(); await carregar();
+    } catch(e){$('login-erro').textContent=e.name==='TimeoutError'?'A autenticação demorou demais. Tente novamente.':e.message;}
+    finally{$('entrar').disabled=false;}
+});
+$('sair').addEventListener('click',async()=>{
+    $('sair').disabled=true;
+    try{await fetch('/api/sessao/sair',{method:'POST',credentials:'same-origin',headers:{'X-DropMon-Request':'1'}});}
+    finally{state.produtos=[];state.carregado=false;$('sair').disabled=false;mostrarLogin();}
+});
 for(let i=0;i<6;i++){const sk=el('div',undefined,'skeleton');sk.setAttribute('aria-hidden','true');sk.append(el('div',undefined,'product-photo'),el('div',undefined,'skeleton-line'));$('grade').append(sk);}
-carregar();
+iniciarSessao();
 

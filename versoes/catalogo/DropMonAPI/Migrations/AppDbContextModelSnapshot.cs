@@ -27,28 +27,35 @@ namespace DropMonAPI.Migrations
 
                     b.Property<string>("Categoria")
                         .IsRequired()
+                        .HasMaxLength(60)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Cor")
+                        .HasMaxLength(60)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Descricao")
+                        .HasMaxLength(1500)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DropNome")
+                        .HasMaxLength(80)
                         .HasColumnType("TEXT");
 
                     b.Property<bool>("IsExclusivoDrop")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Material")
+                        .HasMaxLength(120)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Nome")
                         .IsRequired()
+                        .HasMaxLength(120)
                         .HasColumnType("TEXT");
 
                     b.Property<decimal>("Preco")
+                        .HasPrecision(12, 2)
                         .HasColumnType("TEXT");
 
                     b.Property<int>("QuantidadeEstoque")
@@ -70,6 +77,7 @@ namespace DropMonAPI.Migrations
 
                     b.Property<string>("Url")
                         .IsRequired()
+                        .HasMaxLength(500)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
