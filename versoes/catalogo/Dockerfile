@@ -12,6 +12,9 @@ RUN dotnet publish DropMonAPI/DropMonAPI.csproj \
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS final
 WORKDIR /app
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends libgssapi-krb5-2 \
+    && rm -rf /var/lib/apt/lists/*
 COPY --from=build /app/publish .
 
 # O Render encaminha o tráfego para a porta 10000 por padrão.
