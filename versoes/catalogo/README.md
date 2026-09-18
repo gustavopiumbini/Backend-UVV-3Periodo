@@ -23,6 +23,21 @@ A demonstração só é inserida em Development e se o catálogo estiver vazio. 
 
 Também é possível executar `./iniciar.ps1` ou `./iniciar.ps1 -Demo`.
 
+## Testar no Render
+
+Crie um **Web Service** conectado ao repositório e configure:
+
+- Language: `Docker`
+- Branch: `main`
+- Root Directory: `versoes/catalogo`
+- Dockerfile Path: `./Dockerfile`
+- Docker Build Context Directory: `.`
+- Compute: `Free`
+
+Build Command e Start Command não são necessários: o Dockerfile compila a API, inicia na porta 10000, aplica as migrations e preenche um banco vazio com os seis produtos fictícios. Cada push na `main` pode gerar um novo deploy automaticamente.
+
+Essa configuração é somente para demonstração. O plano gratuito usa armazenamento efêmero: o SQLite e as fotos cadastradas durante o uso são perdidos em reinícios, suspensões e novos deploys. Os seis itens fictícios voltam a ser criados quando a aplicação inicia com um banco vazio. Para persistência pública, migre o banco e as fotos para serviços externos antes de usar dados reais.
+
 ## Funcionalidades
 
 - Grade branca de produtos, com estoque ao lado do nome.

@@ -20,14 +20,17 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
-    // Facilita o primeiro clone. Em produção, migrations são aplicadas no deploy.
+    // Em desenvolvimento e na demonstração do Render, prepara um banco vazio ao iniciar.
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
     if (builder.Configuration.GetValue<bool>("Demo:Seed"))
         await DropMonAPI.Data.DemoData.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(),
             scope.ServiceProvider.GetRequiredService<DropMonAPI.Services.FotoStorage>(), app.Environment.WebRootPath);
+}
+if (app.Environment.IsDevelopment())
+{
     app.MapOpenApi();
 }
 app.UseDefaultFiles();
