@@ -22,15 +22,19 @@ function imagem(url, nome, lazy = true) {
     return img;
 }
 async function api(path = '', options = {}) {
-    let response;
+    let response; const enviandoFoto=options.body instanceof FormData;
     try {
         const headers = {'X-DropMon-Request':'1', Accept:'application/json'};
-        if (!(options.body instanceof FormData)) headers['Content-Type']='application/json';
+        if (!enviandoFoto) headers['Content-Type']='application/json';
         response = await fetch('/api/produtos' + path, { ...options,
             headers,
             credentials:'same-origin',
-            signal: AbortSignal.timeout(30000) });
-    } catch { throw new Error('Não foi possível confirmar a operação. Confira a conexão e atualize o catálogo antes de repetir.'); }
+            signal: AbortSignal.timeout(enviandoFoto ? 120000 : 30000) });
+    } catch(e) {
+        if(enviandoFoto && e.name==='TimeoutError')
+            throw new Error('A foto demorou mais de 2 minutos para ser processada. Tente uma imagem menor.');
+        throw new Error('Não foi possível confirmar a operação. Confira a conexão e atualize o catálogo antes de repetir.');
+    }
     if (response.status === 401) {
         mostrarLogin('Sua sessão expirou. Entre novamente.');
         throw new Error('Sua sessão expirou.');

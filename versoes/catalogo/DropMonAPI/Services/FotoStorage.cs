@@ -54,7 +54,15 @@ public sealed class FotoStorage
             if (imagem.Width > 1600 || imagem.Height > 1600)
                 imagem.Mutate(x => x.Resize(new ResizeOptions { Mode = ResizeMode.Max, Size = new Size(1600, 1600) }));
 
-            var encoder = new WebpEncoder { Quality = 82, FileFormat = WebpFileFormatType.Lossy, SkipMetadata = true };
+            // O plano gratuito do Render tem CPU limitada. O método rápido evita que fotos
+            // grandes ultrapassem o tempo do pedido sem sacrificar a resolução do catálogo.
+            var encoder = new WebpEncoder
+            {
+                Quality = 82,
+                FileFormat = WebpFileFormatType.Lossy,
+                Method = WebpEncodingMethod.Fastest,
+                SkipMetadata = true
+            };
             using var principal = new MemoryStream();
             await imagem.SaveAsync(principal, encoder, ct);
             if (imagem.Width > 480 || imagem.Height > 480)
