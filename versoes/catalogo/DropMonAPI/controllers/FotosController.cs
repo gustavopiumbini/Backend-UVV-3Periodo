@@ -17,23 +17,68 @@ public class FotosController(AppDbContext context, FotoStorage storage) : Contro
     [RequestFormLimits(MultipartBodyLengthLimit = 6 * 1024 * 1024)]
     public async Task<ActionResult<FotoResponse>> Enviar(int id, IFormFile arquivo, CancellationToken ct)
     {
-        // Serializa a contagem e a inclusão para respeitar o limite em SQLite e PostgreSQL.
-        await using var transaction = await context.Database.BeginTransactionAsync(System.Data.IsolationLevel.Serializable, ct);
-        var produto = await context.Produtos.Include(p => p.Fotos).SingleOrDefaultAsync(p => p.Id == id, ct);
-        if (produto is null) return NotFound();
-        if (produto.Fotos.Count >= 4) return Problem(statusCode: 400, detail: "Cada produto pode ter até 4 fotos.");
         string url;
         try { url = await storage.SalvarAsync(arquivo, ct); }
         catch (ArgumentException ex) { return Problem(statusCode: 400, detail: ex.Message); }
-        var foto = new ProdutoFoto { ProdutoId = id, Url = url };
+
+        FotoResponse? resposta = null;
+        var produtoNaoEncontrado = false;
+        var limiteAtingido = false;
+
         try
         {
-            context.Add(foto);
-            await context.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
+            // O PostgreSQL usa uma estratégia de repetição para falhas transitórias. Toda
+            // transação criada pela aplicação precisa ser executada por essa estratégia.
+            var strategy = context.Database.CreateExecutionStrategy();
+            await strategy.ExecuteAsync(async () =>
+            {
+                produtoNaoEncontrado = false;
+                limiteAtingido = false;
+                resposta = null;
+
+                // Serializa a contagem e a inclusão para manter o limite de quatro fotos.
+                await using var transaction = await context.Database.BeginTransactionAsync(
+                    System.Data.IsolationLevel.Serializable,
+                    ct);
+
+                var produto = await context.Produtos
+                    .Include(p => p.Fotos)
+                    .SingleOrDefaultAsync(p => p.Id == id, ct);
+
+                if (produto is null)
+                {
+                    produtoNaoEncontrado = true;
+                    return;
+                }
+
+                if (produto.Fotos.Count >= 4)
+                {
+                    limiteAtingido = true;
+                    return;
+                }
+
+                var foto = new ProdutoFoto { ProdutoId = id, Url = url };
+                context.Add(foto);
+                await context.SaveChangesAsync(ct);
+                await transaction.CommitAsync(ct);
+                resposta = new FotoResponse(foto.Id, foto.Url);
+            });
         }
         catch { await storage.ExcluirAsync(url, ct); throw; }
-        return Created(url, new FotoResponse(foto.Id, foto.Url));
+
+        if (produtoNaoEncontrado)
+        {
+            await storage.ExcluirAsync(url, ct);
+            return NotFound();
+        }
+
+        if (limiteAtingido)
+        {
+            await storage.ExcluirAsync(url, ct);
+            return Problem(statusCode: 400, detail: "Cada produto pode ter até 4 fotos.");
+        }
+
+        return Created(url, resposta!);
     }
 
     [HttpDelete("api/produtos/{id:int}/fotos/{fotoId:int}")]
