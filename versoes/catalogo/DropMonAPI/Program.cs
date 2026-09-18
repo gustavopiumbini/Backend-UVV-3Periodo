@@ -71,12 +71,15 @@ app.UseAuthentication();
 app.UseAuthorization();
 if (app.Environment.IsDevelopment() || builder.Configuration.GetValue<bool>("Database:MigrateOnStartup"))
 {
-    // Em desenvolvimento e na demonstração do Render, prepara um banco vazio ao iniciar.
     using var scope = app.Services.CreateScope();
     await scope.ServiceProvider.GetRequiredService<AppDbContext>().Database.MigrateAsync();
-    if (builder.Configuration.GetValue<bool>("Demo:Seed"))
-        await DropMonAPI.Data.DemoData.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(),
-            scope.ServiceProvider.GetRequiredService<DropMonAPI.Services.FotoStorage>(), app.Environment.ContentRootPath);
+}
+if (builder.Configuration.GetValue<bool>("Demo:Seed"))
+{
+    // A carga de demonstração é independente das migrações, que podem ser aplicadas externamente em produção.
+    using var scope = app.Services.CreateScope();
+    await DropMonAPI.Data.DemoData.SeedAsync(scope.ServiceProvider.GetRequiredService<AppDbContext>(),
+        scope.ServiceProvider.GetRequiredService<DropMonAPI.Services.FotoStorage>(), app.Environment.ContentRootPath);
 }
 if (app.Environment.IsDevelopment())
 {
